@@ -33,3 +33,4 @@ version.info
 *.jasper
 gradle.properties
 .mailmap
+/bin/
