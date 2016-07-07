@@ -1,0 +1,12 @@
+apply plugin: "idea"
+apply plugin: "java"
+
+
+// Definition source which should include.
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+    }
+}
