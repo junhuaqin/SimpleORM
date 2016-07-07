@@ -13,6 +13,4 @@ import java.lang.annotation.Target;
 public @interface Constraint {
     boolean allowNull() default true;
     boolean isPrimary() default false;
-    boolean hasDefault() default false;
-    String defaultValue() default "";
 }

@@ -15,7 +15,7 @@ public class SimpleORM<T> {
     }
 
     public void createTable() {
-        
+
     }
 
     public void dropTable() {
