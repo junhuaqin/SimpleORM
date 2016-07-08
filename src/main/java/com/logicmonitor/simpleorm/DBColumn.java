@@ -14,6 +14,7 @@ public @interface DBColumn {
 	String name() default "";
 
 	String dataType() default "";
+	int length() default 0;
 
 	Constraint constraint() default @Constraint();
 }

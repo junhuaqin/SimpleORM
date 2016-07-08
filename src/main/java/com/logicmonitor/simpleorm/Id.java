@@ -11,4 +11,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
 public @interface Id {
+    enum GenerationType {
+        AUTO_INCREMENT,
+        IDENTITY,
+        NONE
+    }
+
+    GenerationType strategy() default GenerationType.AUTO_INCREMENT;
 }
