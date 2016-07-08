@@ -21,7 +21,7 @@ public class SimpleORMTest {
         public String name;
     }
 
-    private static class AlertDao extends SimpleORM<Alert> {
+    private static class AlertDao extends GenericDao<Alert> {
 
     }
 }

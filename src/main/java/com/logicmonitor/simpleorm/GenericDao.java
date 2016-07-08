@@ -10,10 +10,10 @@ import java.util.stream.Stream;
 /**
  * Created by rbtq on 7/7/16.
  */
-public class SimpleORM<T> {
+public class GenericDao<T> {
     protected Class<T> bean = null;
 
-    public SimpleORM() {
+    public GenericDao() {
         Type type = getClass().getGenericSuperclass();
         Type trueType = ((ParameterizedType) type).getActualTypeArguments()[0];
         this.bean = (Class<T>) trueType;
