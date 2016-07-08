@@ -22,9 +22,9 @@ public class GenericDao<T> {
 	private String getTableName() {
 		DBTable table = bean.getAnnotation(DBTable.class);
 		if (null == table) {
-			return bean.getSimpleName();
+			throw new IllegalStateException("It's not a DB Bean");
 		} else {
-			return table.value();
+			return table.value().isEmpty() ? bean.getSimpleName():table.value();
 		}
 	}
 
@@ -79,12 +79,8 @@ public class GenericDao<T> {
 
 	public void createTable() {
 		final StringBuilder sqlBuilder = new StringBuilder();
-		DBTable table = bean.getAnnotation(DBTable.class);
-		if (null == table) {
-			throw new IllegalStateException("It's not a DB Bean");
-		}
-		String tableName = table.value().isEmpty()?bean.getSimpleName():table.value();
-		sqlBuilder.append("Create table ").append(tableName).append(" (");
+		sqlBuilder.append("Create table ").append(getTableName()).append(" (");
+
 		final List<String> primaryKeys = new ArrayList<>();
 		Field[] fields = bean.getFields();
 		Stream<Field> fieldStream = Stream.of(fields);
