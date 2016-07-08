@@ -1,6 +1,8 @@
 package com.logicmonitor.simpleorm;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -8,14 +10,14 @@ import java.util.stream.Stream;
 /**
  * Created by rbtq on 7/7/16.
  */
-public class SimpleORM<T> extends SimpleORMBase<T> {
-//    protected Class<T> bean = null;
-//
-//    public SimpleORM() {
-//        Type type = getClass().getGenericSuperclass();
-//        Type trueType = ((ParameterizedType) type).getActualTypeArguments()[0];
-//        this.bean = (Class<T>) trueType;
-//    }
+public class SimpleORM<T> {
+    protected Class<T> bean = null;
+
+    public SimpleORM() {
+        Type type = getClass().getGenericSuperclass();
+        Type trueType = ((ParameterizedType) type).getActualTypeArguments()[0];
+        this.bean = (Class<T>) trueType;
+    }
 
 	private String getTableName() {
 		DBTable table = bean.getAnnotation(DBTable.class);
@@ -55,7 +57,7 @@ public class SimpleORM<T> extends SimpleORMBase<T> {
 		if (null == defaultValue) {
 			return "";
 		} else {
-			return "default " + defaultValue.value();
+			return "default \'" + defaultValue.value() + "\'";
 		}
 	}
 
@@ -68,18 +70,21 @@ public class SimpleORM<T> extends SimpleORMBase<T> {
 		StringBuilder sqlBuilder = new StringBuilder();
 
 		sqlBuilder.append(" ").append(getFieldName(field))
-				.append(" ")
-				.append(getFieldSqlDataType(field))
-				.append(" ")
-				.append(getFieldConstraint(field))
-				.append(" ")
-				.append(getFieldDefaultValue(field));
+				  .append(" ").append(getFieldSqlDataType(field))
+				  .append(" ").append(getFieldConstraint(field))
+				  .append(" ").append(getFieldDefaultValue(field));
 
 		return sqlBuilder.toString();
 	}
 
 	public void createTable() {
 		final StringBuilder sqlBuilder = new StringBuilder();
+		DBTable table = bean.getAnnotation(DBTable.class);
+		if (null == table) {
+			throw new IllegalStateException("It's not a DB Bean");
+		}
+		String tableName = table.value().isEmpty()?bean.getSimpleName():table.value();
+		sqlBuilder.append("Create table ").append(tableName).append(" (");
 		final List<String> primaryKeys = new ArrayList<>();
 		Field[] fields = bean.getFields();
 		Stream<Field> fieldStream = Stream.of(fields);
@@ -92,12 +97,14 @@ public class SimpleORM<T> extends SimpleORMBase<T> {
 						primaryKeys.add(getFieldName(n));
 					}
 				})
-				.forEach(n -> sqlBuilder.append(" ").append(getFieldColumnDesc(n)));
+				.forEach(n -> sqlBuilder.append(" ").append(getFieldColumnDesc(n)).append(','));
 
 		sqlBuilder.append(" primary key (");
 		primaryKeys.forEach(n->sqlBuilder.append(n).append(','));
 		sqlBuilder.deleteCharAt(sqlBuilder.length()-1); // delete the last ','
-		sqlBuilder.append(')');
+		sqlBuilder.append(")) ENGINE=INNODB");
+
+		System.out.println(sqlBuilder.toString());
 	}
 
 	public void dropTable() {

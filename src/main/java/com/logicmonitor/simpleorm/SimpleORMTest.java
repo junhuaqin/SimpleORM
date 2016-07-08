@@ -5,7 +5,7 @@ package com.logicmonitor.simpleorm;
  */
 public class SimpleORMTest {
     public static void main(String args[]) {
-        SimpleORM<Alert> orm = new SimpleORM<>();
+        AlertDao orm = new AlertDao();
         orm.createTable();
     }
 
@@ -16,7 +16,12 @@ public class SimpleORMTest {
         public Integer id;
 
         @DBColumn
+        @Constraint(allowNull = false)
         @DefaultValue
         public String name;
+    }
+
+    private static class AlertDao extends SimpleORM<Alert> {
+
     }
 }
