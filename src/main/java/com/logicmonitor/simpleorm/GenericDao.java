@@ -4,10 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -74,15 +71,13 @@ public class GenericDao<T> {
 	private String getFieldSqlDataType(Field field) {
 		DBColumn column = field.getAnnotation(DBColumn.class);
 		if (!column.dataType().isEmpty()) {
-			return column.dataType();
-		} else {
-			if ((field.getType().equals(String.class)) && column.length() > 0) {
-				return String.format("varchar(%d)", column.length());
-			} else {
-				return type2DbType.get(field.getType().getSimpleName());
-			}
-		}
-	}
+            return column.dataType();
+        } else if ((field.getType().equals(String.class)) && column.length() > 0) {
+            return String.format("varchar(%d)", column.length());
+        } else {
+            return type2DbType.get(field.getType().getSimpleName());
+        }
+    }
 
 	private String getFieldConstraint(Field field) {
 		Id id = field.getAnnotation(Id.class);
@@ -176,23 +171,38 @@ public class GenericDao<T> {
 		System.out.println(sqlBuilder.toString());
 	}
 
-	public List<T> loadAll() {
-		return null;
+	public List<T> loadAll() throws InstantiationException, IllegalAccessException {
+		return load("");
 	}
 
 	public T load(Integer id) throws IllegalAccessException, InstantiationException {
 		final StringBuilder sqlBuilder = new StringBuilder();
-		sqlBuilder.append("Select * from table ").append(getTableName())
-		          .append(" Where ")
-		          .append(getFieldName(getIdField()))
+		sqlBuilder.append(getFieldName(getIdField()))
 		          .append(" = ")
 		          .append(id);
-		System.out.println(sqlBuilder.toString());
 
-		T obj = bean.newInstance();
-		SetAllFieldValue(obj, null);
-		return obj;
+        List<T> objects = load(sqlBuilder.toString());
+		return objects.isEmpty()? null : objects.get(0);
 	}
+
+    public List<T> load(String constraint) throws IllegalAccessException, InstantiationException {
+        final StringBuilder sqlBuilder = new StringBuilder();
+        sqlBuilder.append("Select * from table ").append(getTableName());
+        if (!constraint.isEmpty()){
+            sqlBuilder.append(" Where ").append(constraint);
+        }
+
+        System.out.println(sqlBuilder.toString());
+        List<T> objects = new LinkedList<>();
+        for (;;) {
+            T obj = bean.newInstance();
+            SetAllFieldValue(obj, null);
+            objects.add(obj);
+            break;
+        }
+
+        return objects;
+    }
 
 	private Object getFieldValueFromRS(Field field, ResultSet resultSet) {
 		//TODO: get it from real result set.

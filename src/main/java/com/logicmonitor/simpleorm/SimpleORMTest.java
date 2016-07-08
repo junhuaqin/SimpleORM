@@ -11,6 +11,7 @@ public class SimpleORMTest {
         orm.deleteAll();
         orm.truncate();
         System.out.println(orm.load(9));
+        System.out.println(orm.loadAll());
     }
 
     @DBTable("alerts")
