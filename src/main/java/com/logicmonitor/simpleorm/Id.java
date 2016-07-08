@@ -13,7 +13,6 @@ import java.lang.annotation.Target;
 public @interface Id {
     enum GenerationType {
         AUTO_INCREMENT,
-        IDENTITY,
         NONE
     }
 

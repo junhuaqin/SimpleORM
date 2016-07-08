@@ -3,6 +3,7 @@ package com.logicmonitor.simpleorm;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,12 @@ public class GenericDao<T> {
     protected Class<T> bean = null;
 	private static Map<String, String> type2DbType = new HashMap<>();
 	static {
+		type2DbType.put("Enum", "TINYINT");
+		type2DbType.put("Short", "SMALLINT");
 		type2DbType.put("Integer", "int");
+		type2DbType.put("Long", "bigint");
+		type2DbType.put("Float", "float");
+		type2DbType.put("Double", "double");
 		type2DbType.put("String", "text");
 	}
 
@@ -53,6 +59,13 @@ public class GenericDao<T> {
 		}
 	}
 
+	private Field getIdField(){
+		Stream<Field> fieldStream = Stream.of(bean.getFields());
+		return fieldStream.filter(n->n.getAnnotation(Id.class)!=null)
+				          .findFirst()
+				          .get();
+	}
+
 	private String getTableName() {
 		DBTable table = bean.getAnnotation(DBTable.class);
 		return table.value().isEmpty() ? bean.getSimpleName():table.value();
@@ -74,7 +87,17 @@ public class GenericDao<T> {
 	private String getFieldConstraint(Field field) {
 		Id id = field.getAnnotation(Id.class);
 		if (null != id) {
-			return "not null";
+			StringBuilder sqlBuilder = new StringBuilder();
+			sqlBuilder.append("not null");
+			switch (id.strategy()) {
+				case AUTO_INCREMENT:
+					sqlBuilder.append(" AUTO_INCREMENT");
+					break;
+				default:
+					break;
+			}
+
+			return sqlBuilder.toString();
 		}
 
 		Constraint constraint = field.getAnnotation(Constraint.class);
@@ -136,15 +159,21 @@ public class GenericDao<T> {
 	}
 
 	public void dropTable() {
-
+		final StringBuilder sqlBuilder = new StringBuilder();
+		sqlBuilder.append("Drop table ").append(getTableName());
+		System.out.println(sqlBuilder.toString());
 	}
 
 	public void deleteAll() {
-
+		final StringBuilder sqlBuilder = new StringBuilder();
+		sqlBuilder.append("Delete from table ").append(getTableName());
+		System.out.println(sqlBuilder.toString());
 	}
 
-	public void trunct() {
-
+	public void truncate() {
+		final StringBuilder sqlBuilder = new StringBuilder();
+		sqlBuilder.append("Truncate table ").append(getTableName());
+		System.out.println(sqlBuilder.toString());
 	}
 
 	public List<T> loadAll() {
@@ -152,6 +181,39 @@ public class GenericDao<T> {
 	}
 
 	public T load(Integer id) throws IllegalAccessException, InstantiationException {
-		return bean.newInstance();
+		final StringBuilder sqlBuilder = new StringBuilder();
+		sqlBuilder.append("Select * from table ").append(getTableName())
+		          .append(" Where ")
+		          .append(getFieldName(getIdField()))
+		          .append(" = ")
+		          .append(id);
+		System.out.println(sqlBuilder.toString());
+
+		T obj = bean.newInstance();
+		SetAllFieldValue(obj, null);
+		return obj;
+	}
+
+	private Object getFieldValueFromRS(Field field, ResultSet resultSet) {
+		//TODO: get it from real result set.
+		if (field.getType().equals(String.class)) {
+			return "test";
+		} else if (field.getType().equals(Integer.class)) {
+			return 0;
+		} else {
+			return null;
+		}
+	}
+
+	private void SetAllFieldValue(T obj, ResultSet resultSet) {
+		Stream<Field> fieldStream = Stream.of(bean.getFields());
+		fieldStream.filter(n -> n.getAnnotation(DBColumn.class) != null)
+				   .forEach(n->{
+					   try {
+						   n.set(obj, getFieldValueFromRS(n, resultSet));
+					   } catch (IllegalAccessException e) {
+						   e.printStackTrace();
+					   }
+				   });
 	}
 }
