@@ -56,19 +56,19 @@ public class GenericDao<T> {
 		}
 	}
 
-	private Field getIdField(){
+	protected Field getIdField(){
 		Stream<Field> fieldStream = Stream.of(bean.getFields());
 		return fieldStream.filter(n->n.getAnnotation(Id.class)!=null)
 				          .findFirst()
 				          .get();
 	}
 
-	private String getTableName() {
+    protected String getTableName() {
 		DBTable table = bean.getAnnotation(DBTable.class);
 		return table.value().isEmpty() ? bean.getSimpleName():table.value();
 	}
 
-	private String getFieldSqlDataType(Field field) {
+    protected String getFieldSqlDataType(Field field) {
 		DBColumn column = field.getAnnotation(DBColumn.class);
 		if (!column.dataType().isEmpty()) {
             return column.dataType();
@@ -79,7 +79,7 @@ public class GenericDao<T> {
         }
     }
 
-	private String getFieldConstraint(Field field) {
+    protected String getFieldConstraint(Field field) {
 		Id id = field.getAnnotation(Id.class);
 		if (null != id) {
 			StringBuilder sqlBuilder = new StringBuilder();
@@ -103,7 +103,7 @@ public class GenericDao<T> {
 		}
 	}
 
-	private String getFieldDefaultValue(Field field) {
+    protected String getFieldDefaultValue(Field field) {
 		DefaultValue defaultValue = field.getAnnotation(DefaultValue.class);
 		if (null == defaultValue) {
 			return "";
@@ -112,12 +112,12 @@ public class GenericDao<T> {
 		}
 	}
 
-	private String getFieldName(Field field) {
+    protected String getFieldName(Field field) {
 		DBColumn column = field.getAnnotation(DBColumn.class);
 		return column.name().equals("") ? field.getName() : column.name();
 	}
 
-	private String getFieldColumnDesc(Field field) {
+    protected String getFieldColumnDesc(Field field) {
 		StringBuilder sqlBuilder = new StringBuilder();
 
 		sqlBuilder.append(" ").append(getFieldName(field))
@@ -204,7 +204,7 @@ public class GenericDao<T> {
         return objects;
     }
 
-	private Object getFieldValueFromRS(Field field, ResultSet resultSet) {
+    protected Object getFieldValueFromRS(Field field, ResultSet resultSet) {
 		//TODO: get it from real result set.
 		if (field.getType().equals(String.class)) {
 			return "test";
@@ -215,7 +215,7 @@ public class GenericDao<T> {
 		}
 	}
 
-	private void SetAllFieldValue(T obj, ResultSet resultSet) {
+    protected void SetAllFieldValue(T obj, ResultSet resultSet) {
 		Stream<Field> fieldStream = Stream.of(bean.getFields());
 		fieldStream.filter(n -> n.getAnnotation(DBColumn.class) != null)
 				   .forEach(n->{

@@ -10,12 +10,16 @@ public class SimpleORMTest {
         orm.dropTable();
         orm.deleteAll();
         orm.truncate();
-        System.out.println(orm.load(9));
-        System.out.println(orm.loadAll());
+        Alert a = orm.load(9);
+        System.out.println(a);
+        a.name = "xxx";
+        System.out.println(a);
+        orm.dumpCache();
+//        System.out.println(orm.loadAll());
     }
 
     @DBTable("alerts")
-    public static class Alert{
+    public static class Alert implements Cacheable<Alert>, Cloneable{
         @Id
         @DBColumn
         public Integer id;
@@ -38,9 +42,22 @@ public class SimpleORMTest {
                     ", desc='" + desc + '\'' +
                     '}';
         }
+
+        @Override
+        public Alert cloneObj() {
+            Alert o = null;
+            try {
+                o = (Alert) super.clone();
+            } catch (CloneNotSupportedException e) {
+                e.printStackTrace();
+            }
+            return o;
+        }
     }
 
-    private static class AlertDao extends GenericDao<Alert> {
-
+    private static class AlertDao extends GenericCachedDao<Alert> {
+        public AlertDao() {
+            super(new LRUCache<>(10));
+        }
     }
 }
