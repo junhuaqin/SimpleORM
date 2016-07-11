@@ -216,10 +216,11 @@ public class GenericDao<T> {
 	}
 
     protected void SetAllFieldValue(T obj, ResultSet resultSet) {
-		Stream<Field> fieldStream = Stream.of(bean.getFields());
+		Stream<Field> fieldStream = Stream.of(bean.getDeclaredFields());
 		fieldStream.filter(n -> n.getAnnotation(DBColumn.class) != null)
 				   .forEach(n->{
 					   try {
+                           n.setAccessible(true);
 						   n.set(obj, getFieldValueFromRS(n, resultSet));
 					   } catch (IllegalAccessException e) {
 						   e.printStackTrace();

@@ -31,7 +31,7 @@ public class SimpleORMTest {
         @DBColumn(length = 10)
         @Constraint(allowNull = false)
         @DefaultValue("test")
-        public String desc;
+        private String desc;
 
 
         @Override
