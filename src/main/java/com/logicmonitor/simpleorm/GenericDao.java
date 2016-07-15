@@ -5,6 +5,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 /**
@@ -175,7 +176,7 @@ public class GenericDao<T> {
 		return load("");
 	}
 
-	public T load(Integer id) throws IllegalAccessException, InstantiationException {
+	public T load(Integer id) throws IllegalAccessException, InstantiationException, ExecutionException {
 		final StringBuilder sqlBuilder = new StringBuilder();
 		sqlBuilder.append(getFieldName(getIdField()))
 		          .append(" = ")
