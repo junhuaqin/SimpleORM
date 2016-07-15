@@ -1,6 +1,13 @@
 apply plugin: "idea"
 apply plugin: "java"
 
+repositories {
+    jcenter()
+}
+
+dependencies {
+  compile 'com.google.guava:guava:19.0'
+}
 
 // Definition source which should include.
 sourceSets {
